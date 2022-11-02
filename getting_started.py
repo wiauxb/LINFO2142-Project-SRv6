@@ -5,6 +5,7 @@ from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
 from ipmininet import DEBUG_FLAG
 from ipmininet.srv6 import enable_srv6
+from ipmininet.srv6 import SRv6Encap
 
 class MyTopology(IPTopo):
 
@@ -32,15 +33,29 @@ class MyTopology(IPTopo):
 
         super().build(*args, **kwargs)
     
-    def post_build(self, net):
-        for n in net.hosts + net.routers:
-            enable_srv6(n)
-        super().post_build(net)
+    # def post_build(self, net):
+    # #     for n in net.hosts + net.routers:
+    # #         enable_srv6(n)
+    
+    # # No need to enable SRv6 because the call to the abstraction
+    # # triggers it
+
+    # # This adds an SRH encapsulation route on h1 for packets to h2
+    #     SRv6Encap(net=net, node="h1", to="h2",
+    #                 # You can specify the intermediate point with any
+    #                 # of the host, its name, an interface or the address
+    #                 # itself
+    #                 # through=[net["r1"], "r1", net["r1"].intf("lo"),
+    #                 #         net["r1"].intf("lo").ip6],
+    #                 through=[net["r5"]],
+    #                 # Either insertion (INLINE) or encapsulation (ENCAP)
+    #                 mode=SRv6Encap.INLINE)
+    #     super().post_build(net)
 
 
 if __name__ == "__main__":
     
-    net = IPNet(topo=MyTopology())
+    net = IPNet(topo=MyTopology(), use_v4=False)
     # DEBUG_FLAG = True
     try:
         net.start()
