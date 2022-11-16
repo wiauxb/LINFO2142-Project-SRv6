@@ -33,12 +33,14 @@ class MyTopology(IPTopo):
     
     def post_build(self, net):
         for n in net.hosts + net.routers:
+            interfaces = ["all", "lo", "default", str(n)+"-eth0"]
             # enable_srv6(n)
-            result = n.cmd("sysctl net.ipv6.conf."+str(n)+"-eth0.seg6_enabled=1")
-            print(result)
-            result = n.cmd("sysctl net.ipv6.conf."+str(n)+"-eth0.seg6_require_hmac=-1")
-            print(result)
-        result = net.get("h1").cmd("ip -6 route add fc00:0:2::1 encap seg6 mode inline segs fc00:0:5::1")
+            for i in interfaces:
+                result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_enabled=1")
+                print(result)
+                result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
+                print(result)
+        result = net.get("h1").cmd("ip -6 route add fc00:0:2::2 encap seg6 mode inline segs fc00:0:5::1 dev h1-eth0")
         print(result)
     
     # # No need to enable SRv6 because the call to the abstraction
