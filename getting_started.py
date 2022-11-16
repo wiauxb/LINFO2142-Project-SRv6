@@ -33,9 +33,9 @@ class MyTopology(IPTopo):
     
     def post_build(self, net):
         for n in net.hosts + net.routers:
+            interfaces = ["all", "lo", "default", str(n)+"-eth0"]
             # enable_srv6(n)
-            interaces=["all", "default", "lo", str(n)+"-eth0"]
-            for i in interaces:
+            for i in interfaces:
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_enabled=1")
                 print(result)
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
