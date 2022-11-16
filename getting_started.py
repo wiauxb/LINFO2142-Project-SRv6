@@ -32,10 +32,10 @@ class MyTopology(IPTopo):
 
         super().build(*args, **kwargs)
     
-    def post_build(self, net):
-        for n in net.hosts + net.routers:
-            enable_srv6(n)
-        super().post_build(net)
+#    def post_build(self, net):
+#        for n in net.hosts + net.routers:
+#            enable_srv6(n)
+#        super().post_build(net)
 
 
 if __name__ == "__main__":
@@ -47,3 +47,5 @@ if __name__ == "__main__":
         IPCLI(net)
     finally:
         net.stop()
+
+    #sudo python -m ipmininet.clean --> si ça crash ou qu'on oublie de net.stop()
