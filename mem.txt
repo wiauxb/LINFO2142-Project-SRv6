@@ -3,3 +3,11 @@ ip -6 route add fc00:0:2::1 encap seg6 mode inline segs fc00:0:5::1 dev h1-eth0
 se connecter à la conf bgp :
 
     telnet localhost 2605
+    password zebra
+
+ajouter un network bgp:
+    enable
+    conf t
+    router bgp 1
+    address-family ipv6 unicast
+    network XX::XX/X
