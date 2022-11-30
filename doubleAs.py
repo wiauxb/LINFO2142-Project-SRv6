@@ -1,5 +1,5 @@
 from ipmininet.iptopo import IPTopo
-from ipmininet.router.config import SSHd, BGP, AF_INET6, ebgp_session, CLIENT_PROVIDER, SHARE
+from ipmininet.router.config import SSHd, BGP, AF_INET6, ebgp_session, CLIENT_PROVIDER, SHARE,  BorderRouterConfig
 from ipmininet.host.config import Named
 from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
@@ -11,32 +11,29 @@ class MyTopology(IPTopo):
 
     def build(self, *args, **kwargs):
 
-        r1, r2, r3, r4 = self.addRouters("r1", "r2", "r3", "r4")
-        
-        routers=self.routers()
-        prefix = {routers[i]: 'fc00:0:%04x::/48' % (i+1) for i in range(len(routers ))}
+        as1r1 = self.bgp('as1r1')
+        as1r2 = self.bgp('as1r2')
+        as2r1 = self.bgp('as2r1')
+        as2r2 = self.bgp('as2r2')
+        as2r3 = self.bgp('as2r3')
+    
+        self.addLinks((as1r1, as1r2), (as1r2, as2r1), (as2r1, as2r2), (as2r1, as2r3))
 
-        r1.addDaemon(BGP, address_families=(AF_INET6(networks=(prefix[r1],)),))
-        r2.addDaemon(BGP, address_families=(AF_INET6(networks=(prefix[r2],)),))
-        r3.addDaemon(BGP, address_families=(AF_INET6(networks=(prefix[r3],)),))
-        r4.addDaemon(BGP, address_families=(AF_INET6(networks=(prefix[r4],)),))
+        # Set AS-ownerships
+        self.addiBGPFullMesh(1, (as1r1, as1r2))
+        self.addiBGPFullMesh(2, (as2r1, as2r2, as2r3))
 
-        h1 = self.addHost("h1")
-
-        h2 = self.addHost("h2")
-
-        # Helper to create several links in one function call
-        self.addLinks((h1, r1), (r1, r2),(r2,r3), (r3, r4),
-                      (r4, h2))
-        self.addAS(1, (r1,r2,))
-        self.addAS(2, (r3,r4,))
-
-        self.addiBGPFullMesh(1, routers=[r1,r2])
-        self.addiBGPFullMesh(2, routers=[r3,r4])
-
-        ebgp_session(self, r2, r3, link_type=SHARE)
-
+        # Add eBGP peering
+        ebgp_session(self, as1r2, as2r1)
+    
+        # Add test hosts
+        for r in self.routers():
+            self.addLink(r, self.addHost('h%s' % r))
         super().build(*args, **kwargs)
+
+    def bgp(self, name):
+        r = self.addRouter(name, config=BorderRouterConfig)
+        return r
     
     def post_build(self, net):
         for n in net.hosts + net.routers:
@@ -47,7 +44,7 @@ class MyTopology(IPTopo):
                 #print(result)
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
                 #print(result)
-        #result = net.get("h1").cmd("ip -6 route add fc00:0:2::1 encap seg6 mode inline segs fc00:0:5::1 dev h1-eth0")
+        result = net.get("has1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev has1r1-eth0")
         #print(result)
     
     # # No need to enable SRv6 because the call to the abstraction
