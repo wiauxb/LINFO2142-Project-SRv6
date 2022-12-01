@@ -16,7 +16,7 @@ class MyTopology(IPTopo):
         as2r1 = self.bgp('as2r1')
         as2r2 = self.bgp('as2r2')
         as2r3 = self.bgp('as2r3')
-    
+        
         self.addLinks((as1r1, as1r2), (as1r2, as2r1), (as2r1, as2r2), (as2r1, as2r3))
 
         # Set AS-ownerships
