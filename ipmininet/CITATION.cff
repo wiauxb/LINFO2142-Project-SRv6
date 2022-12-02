@@ -1,0 +1,51 @@
+cff-version: 1.2.0
+authors:
+  - family-names: Tilmans
+    given-names: Olivier
+    orcid: "https://orcid.org/0000-0002-1497-5250"
+  - family-names: Jadin
+    given-names: Mathieu
+    orcid: "https://orcid.org/0000-0003-0642-6806"
+title: IPMininet
+message: If you use this software, please cite it using the metadata from this file.
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Bonaventure
+      given-names: Olivier
+      orcid: "https://orcid.org/0000-0002-6717-0296"
+    - family-names: De Coninck
+      given-names: Quentin
+      orcid: "https://orcid.org/0000-0001-6483-3157"
+    - family-names: Duchêne
+      given-names: Fabien
+      orcid: "https://orcid.org/0000-0002-8187-525X"
+    - family-names: Gego
+      given-names: Anthony
+    - family-names: Jadin
+      given-names: Mathieu
+      orcid: "https://orcid.org/0000-0003-0642-6806"
+    - family-names: Michel
+      given-names: François
+    - family-names: Piraux
+      given-names: Maxime
+    - family-names: Poncin
+      given-names: Chantal
+    - family-names: Tilmans
+      given-names: Olivier
+      orcid: "https://orcid.org/0000-0002-1497-5250"
+  title: Open educational resources for computer networking
+  date-released: 2017-12-18
+  doi: "10.1145/3411740.3411746"
+  journal: "ACM SIGCOMM Computer Communication Review"
+  month: 8
+  start: 38
+  end: 45
+  volume: 50
+  number: 3
+  year: 2020
+  publisher:
+    name: "ACM"
+    city: "New York"
+    country: "US"
+    website: "https://www.acm.org/"

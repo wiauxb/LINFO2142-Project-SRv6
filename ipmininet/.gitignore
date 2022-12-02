@@ -1,0 +1,15 @@
+.autoenv*
+*.swp
+*.pyc
+build
+dist
+*.egg-info
+*.egg
+*.cache
+__ipmininet_temp_key
+__ipmininet_temp_key.pub
+tags
+.eggs
+*.ropeproject
+_build/
+docs/api/*.rst
