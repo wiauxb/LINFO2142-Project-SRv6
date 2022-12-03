@@ -89,7 +89,7 @@ def install_mininet(output_dir: str, pip_install=True):
 def install_libyang(output_dir: str):
     dist.install("git", "cmake")
     if dist.NAME == "Ubuntu" or dist.NAME == "Debian":
-        dist.install("libpcre3-dev")
+        dist.install("libpcre2-dev")
     elif dist.NAME == "Fedora":
         dist.install("pcre-devel")
 

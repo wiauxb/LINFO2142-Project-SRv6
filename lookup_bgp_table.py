@@ -1,6 +1,7 @@
 import telnetlib
 import re
 import subprocess
+from time import sleep
 
 def load_bgp_table():
     tn = telnetlib.Telnet("localhost", 2605)
@@ -60,20 +61,45 @@ def parse_bgp_table(table):
 
 def parse_ip_route_table(table):
     IPV6ADDR = r"((([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|([0-9a-fA-F]{1,4}:){1,7}:|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(/[0-9]{1,3})?)"
+    NEXTHOP = IPV6ADDR + r", (.*), weight"
+
+    lines = re.findall(r"(B>(.|\n)*?(?=\n[a-zA-Z]))", table)
 
 
-    lines = re.findall(r"B>.*\n", table)
-
-    matches = map(lambda line: re.findall(IPV6ADDR, line), lines)
-    addresses = map(lambda pair: (pair[0][0], pair[1][0]), matches)
+    match_nexthop = map(lambda line: re.findall(NEXTHOP, line[0]), lines)
+    match_addr = map(lambda line: re.findall(IPV6ADDR, line[0]), lines)
+    addresses = map(lambda pair: (pair[0][0][0], pair[0][1][0], pair[1][0][-1]), zip(match_addr, match_nexthop))
 
     return list(addresses)
 
 
+def get_existing_config():
+    # source: https://www.cyberciti.biz/faq/python-run-external-command-and-get-output/
+    p = subprocess.Popen("ip -6 route | grep seg6 | cut -f1 -d ' '", stdout=subprocess.PIPE, shell=True)
+ 
+    ## Talk with date command i.e. read data from stdout and stderr. Store this info in tuple ##
+    ## Interact with process: Send data to stdin. Read data from stdout and stderr, until end-of-file is reached.  ##
+    ## Wait for process to terminate. The optional input argument should be a string to be sent to the child process, ##
+    ## or None, if no data should be sent to the child.
+    (output, err) = p.communicate()
+     
+    ## Wait for date to terminate. Get return returncode ##
+    p_status = p.wait()
+    return output.decode().strip().split("\n")
+
+
 if __name__ == "__main__":
-    table = load_ip_route_table()
-    print(table)
-    nexthops = parse_ip_route_table(table)
-    print(nexthops)
-    for addr, nexthop in nexthops:
-        subprocess.call(["ip", "-6", "route", "replace", addr, "encap", "seg6", "mode", "inline", "segs", nexthop, "dev", "as1r1-eth0"])
+    while True:
+        sleep(15)
+        existing = get_existing_config()
+        for addr in existing:
+            subprocess.call(["ip", "-6", "route", "del", addr])
+        sleep(.1)
+        table = load_ip_route_table()
+        # print(table)
+        nexthops = parse_ip_route_table(table)
+        for addr, nexthop, dev in nexthops:
+            # print(addr, nexthop, dev)
+            if "fe80" not in nexthop:
+                subprocess.call(["ip", "-6", "route", "replace", addr, "encap", "seg6", "mode", "inline", "segs", nexthop, "dev", dev])
+        # break
