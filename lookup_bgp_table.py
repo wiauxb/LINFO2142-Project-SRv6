@@ -13,6 +13,18 @@ def load_bgp_table():
 
     return tn.read_all().decode('ascii')
 
+
+def load_ip_route_table():
+    tn = telnetlib.Telnet("localhost", 2601)
+
+    tn.read_until(b"Password: ")
+    tn.write("zebra".encode('ascii') + b"\n")
+
+    tn.write(b"sh ipv6 route\n")
+    tn.write(b"exit\n")
+
+    return tn.read_all().decode('ascii')
+
 ############################################################
 #
 # https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-ipv6-addresses
@@ -47,8 +59,22 @@ def parse_bgp_table(table):
     return list(addresses)
 
 
+def parse_ip_route_table(table):
+    IPV6ADDR = r"((([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|([0-9a-fA-F]{1,4}:){1,7}:|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(/[0-9]{1,3})?)"
+
+
+    lines = re.findall(r"B>.*\n", table)
+
+    matches = map(lambda line: re.findall(IPV6ADDR, line), lines)
+    addresses = map(lambda pair: (pair[0][0], pair[1][0]), matches)
+
+    return list(addresses)
+
+
 if __name__ == "__main__":
-    table = load_bgp_table()
-    nexthops = parse_bgp_table(table)
+    table = load_ip_route_table()
+    print(table)
+    nexthops = parse_ip_route_table(table)
+    print(nexthops)
     for addr, nexthop in nexthops:
         subprocess.call(["ip", "-6", "route", "replace", addr, "encap", "seg6", "mode", "inline", "segs", nexthop, "dev", "as1r1-eth0"])
