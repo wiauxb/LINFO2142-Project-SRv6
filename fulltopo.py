@@ -100,6 +100,8 @@ class MyTopology(IPTopo):
                 #print(result)
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
                 #print(result)
+        for r in net.routers:
+            r.cmd("python3 lookup_bgp_table.py &")
         # result = net.get("as1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev as1r1-eth0")
         # print(result)
     
