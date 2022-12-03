@@ -1,8 +1,10 @@
 from ipmininet.iptopo import IPTopo
 from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
+from ipmininet.utils import has_cmd
 from ipmininet.router.config import BGP, ebgp_session, set_rr, AccessList, \
     AF_INET6
+from time import sleep
 
 
 
@@ -97,9 +99,9 @@ class MyTopology(IPTopo):
             # enable_srv6(n)
             for i in interfaces:
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_enabled=1")
-                #print(result)
+                print(result)
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
-                #print(result)
+                print(result)
         # result = net.get("as1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev as1r1-eth0")
         # print(result)
     
@@ -118,13 +120,36 @@ class MyTopology(IPTopo):
     #                 mode=SRv6Encap.INLINE)
     #     super().post_build(net)
 
+def rtt_measurement(net):
+    net.start()
+    h1 = net.get('as1h1')
+    h2 = net.get('as4h1')    
+    result = h1.cmd('ifconfig')
+    print(result)
+    sleep(15)
+    print("PingPair")
+    print(net.ping(hosts=[h1, h2], timeout="3", use_v4=False))
+    net.ping6Pair()
+    print("PingPair")
+    net.ping6Pair()
+    print("PingAll")
+    print(net.pingAll())
+
+    # rtt = host1.cmd("ping -c 10 "+ host2 +" | tail -1 | awk '{print $4}' | cut -d '/' -f 2")
+    # print(rtt)
+    # return rtt
+
+        
+
+
 
 if __name__ == "__main__":
     
     net = IPNet(topo=MyTopology(), use_v4=False)
     # DEBUG_FLAG = True
     try:
-        net.start()
+        rtt_measurement(net)
+        # net.start()
         IPCLI(net)
     finally:
         net.stop()

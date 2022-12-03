@@ -7,7 +7,6 @@ def load_bgp_table():
 
     tn.read_until(b"Password: ")
     tn.write("zebra".encode('ascii') + b"\n")
-
     tn.write(b"sh bgp\n")
     tn.write(b"exit\n")
 
