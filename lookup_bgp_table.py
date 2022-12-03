@@ -74,9 +74,28 @@ def parse_ip_route_table(table):
     return list(addresses)
 
 
+def get_existing_config():
+    # source: https://www.cyberciti.biz/faq/python-run-external-command-and-get-output/
+    p = subprocess.Popen("ip -6 route | grep seg6 | cut -f1 -d ' '", stdout=subprocess.PIPE, shell=True)
+ 
+    ## Talk with date command i.e. read data from stdout and stderr. Store this info in tuple ##
+    ## Interact with process: Send data to stdin. Read data from stdout and stderr, until end-of-file is reached.  ##
+    ## Wait for process to terminate. The optional input argument should be a string to be sent to the child process, ##
+    ## or None, if no data should be sent to the child.
+    (output, err) = p.communicate()
+     
+    ## Wait for date to terminate. Get return returncode ##
+    p_status = p.wait()
+    return output.decode().strip().split("\n")
+
+
 if __name__ == "__main__":
-    sleep(10)
     while True:
+        sleep(15)
+        existing = get_existing_config()
+        for addr in existing:
+            subprocess.call(["ip", "-6", "route", "del", addr])
+        sleep(.1)
         table = load_ip_route_table()
         # print(table)
         nexthops = parse_ip_route_table(table)
@@ -84,4 +103,4 @@ if __name__ == "__main__":
             # print(addr, nexthop, dev)
             if "fe80" not in nexthop:
                 subprocess.call(["ip", "-6", "route", "replace", addr, "encap", "seg6", "mode", "inline", "segs", nexthop, "dev", dev])
-        sleep(5)
+        # break
