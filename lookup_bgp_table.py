@@ -1,15 +1,17 @@
 import telnetlib
 import re
+import subprocess
 
-tn = telnetlib.Telnet("localhost", 2605)
+def load_bgp_table():
+    tn = telnetlib.Telnet("localhost", 2605)
 
-tn.read_until(b"Password: ")
-tn.write("zebra".encode('ascii') + b"\n")
+    tn.read_until(b"Password: ")
+    tn.write("zebra".encode('ascii') + b"\n")
 
-tn.write(b"sh bgp\n")
-tn.write(b"exit\n")
+    tn.write(b"sh bgp\n")
+    tn.write(b"exit\n")
 
-output = tn.read_all().decode('ascii')
+    return tn.read_all().decode('ascii')
 
 ############################################################
 #
@@ -33,10 +35,20 @@ output = tn.read_all().decode('ascii')
 #         (IPV6SEG:){1,4}:IPV4ADDR               # 2001:db8:3:4::192.0.2.33  64:ff9b::192.0.2.33 (IPv4-Embedded IPv6 Address)
 #         )
 
-IPV6ADDR = r"((([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|([0-9a-fA-F]{1,4}:){1,7}:|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(/[0-9]{1,3})?)"
+def parse_bgp_table(table):
+    IPV6ADDR = r"((([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|([0-9a-fA-F]{1,4}:){1,7}:|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(/[0-9]{1,3})?)"
 
 
-lines = re.findall(r"\*>.*\n", output)
+    lines = re.findall(r"\*>.*\n", table)
 
-for addresses in map(lambda line: re.findall(IPV6ADDR, line), lines):
-    print(addresses[0][0], "-->", addresses[1][0])
+    matches = map(lambda line: re.findall(IPV6ADDR, line), lines)
+    addresses = map(lambda pair: (pair[0][0], pair[1][0]), matches)
+
+    return list(addresses)
+
+
+if __name__ == "__main__":
+    table = load_bgp_table()
+    nexthops = parse_bgp_table(table)
+    for addr, nexthop in nexthops:
+        subprocess.call(["ip", "-6", "route", "replace", addr, "encap", "seg6", "mode", "inline", "segs", nexthop, "dev", "as1r1-eth0"])

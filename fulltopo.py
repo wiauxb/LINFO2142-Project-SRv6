@@ -100,8 +100,8 @@ class MyTopology(IPTopo):
                 #print(result)
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
                 #print(result)
-        #result = net.get("has1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev has1r1-eth0")
-        #print(result)
+        # result = net.get("as1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev as1r1-eth0")
+        # print(result)
     
     # # No need to enable SRv6 because the call to the abstraction
     # # triggers it
