@@ -84,12 +84,12 @@ def rtt_measurement(net):
 def perfTest(net):
     h1, h4 = net.get( 'as1h1', 'as2h1' )
     # h1.setIP('fc00:0:1::2')
-    # print(h1.cmd("ifconfig"))
     result = h1.cmd("iperf3 -s &")
-    # print(result)
+    print(net.pingAll())
+    print("server "+str(result))
     sleep(10)
-    result = h4.cmd("iperf3 -c fc00:0:1::2 >> doubleAsPerf_srv6.txt")
-    # print(result)
+    result = h4.cmd("iperf3 -c fc00:0:1::2 >> doubleAsPerf_dummy.txt")
+    print("client " + str(result))
 
 if __name__ == "__main__":
     
@@ -97,9 +97,9 @@ if __name__ == "__main__":
     # DEBUG_FLAG = True
     try:
         net.start()
-        # sleep(10)
-        # for i in range(10):
-        #     perfTest(net)
+        sleep(30)
+        for i in range(10):
+            perfTest(net)
         IPCLI(net)
     finally:
         net.stop()
