@@ -49,13 +49,7 @@ class MyTopology(IPTopo):
 
         # Add the host and the switch
         as1h1 = self.addHost('as1h1')
-        as1h2 = self.addHost('as1h2')
-        as1h3 = self.addHost('as1h3')
-        as1h4 = self.addHost('as1h4')
-        as1h5 = self.addHost('as1h5')
-        as1h6 = self.addHost('as1h6')
         as4h1 = self.addHost('as4h1')
-        as4h2 = self.addHost('as4h2')
         switch = self.addSwitch('s4')
 
         # Add Links
@@ -67,8 +61,7 @@ class MyTopology(IPTopo):
         self.addLinks((as1r4, as1r5), (as1r5, as1r6), (as4r1, as1r6),
                       (as4r2, as1r5), (as4r1, switch), (as4r2, switch),
                       (switch, as4h1))
-        self.addLinks((as1r2, as1h2), (as1r3, as1h3), (as1r4, as1h4), (as1r5, as1h5), (as1r6, as1h6), (switch, as4h2))
-        self.addSubnet((as4r1, as4r2, as4h1, as4h2), subnets=('dead:beef::/32',))
+        self.addSubnet((as4r1, as4r2, as4h1), subnets=('dead:beef::/32',))
 
         """al4 = AccessList(name='all4', entries=('any',), family='ipv4')
         al6 = AccessList(name='all6', entries=('any',), family='ipv6')
@@ -110,7 +103,7 @@ class MyTopology(IPTopo):
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
                 # print(result)
         for r in net.routers:
-            r.cmd("python3 dummy_lookup.py &")
+            r.cmd("python3 lookup_bgp_table.py &")
         super().post_build(net)
         # result = net.get("as1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev as1r1-eth0")
         # print(result)
@@ -145,11 +138,12 @@ def rtt_measurement(net):
 
 def perfTest(net):
     h1, h4 = net.get( 'as1h1', 'as4h1' )
-    h1.setIP('fc00:0:2::2')
+    # h1.setIP('fc00:0:2::2')
+    print(h1.cmd("ifconfig"))
     result = h1.cmd("iperf3 -s &")
     print(result)
     sleep(10)
-    result = h4.cmd("iperf3 -c fc00:0:2::2 >> fulltopoDummy.txt")
+    result = h4.cmd("iperf3 -c fc00:0:2::1 >> fulltopo_srv6.txt")
     print(result)
 
         
@@ -162,7 +156,7 @@ if __name__ == "__main__":
     # DEBUG_FLAG = True
     try:
         net.start()
-        sleep(20)
+        sleep(40)
         #rtt_measurement(net)
         for y in range (10):
             perfTest(net)
