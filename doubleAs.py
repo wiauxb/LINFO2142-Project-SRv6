@@ -47,6 +47,8 @@ class MyTopology(IPTopo):
                 #print(result)
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
                 #print(result)
+                #for r in net.routers:
+        #  r.cmd("python3 lookup_bgp_table.py &")
         # result = net.get("has1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev has1r1-eth0")
         super().post_build(net)
         #print(result)
@@ -68,13 +70,14 @@ class MyTopology(IPTopo):
 def rtt_measurement(net):
     h1 = net.get('as1h1')
     h2 = net.get('as2h1')    
+    rtt_mean=[]
     rtt=[]
-    for x in range(15) :
+    for x in range(5) :
         result = net.ping(hosts=[h1, h2], timeout="3", use_v4=False)
         print(result)
         if(result!=0):
             rtt.append(float(result))
-    rtt_mean = sum(rtt)/len(rtt)
+    rtt_mean=(sum(rtt)/len(rtt))
     print(rtt_mean)
     return rtt_mean
 
