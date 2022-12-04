@@ -104,8 +104,8 @@ Connecting to host fc00:0:2::2, port 5201
 [  5]   5.00-6.00   sec  2.28 GBytes  19.6 Gbits/sec    0    787 KBytes       
 [  5]   6.00-7.00   sec  2.25 GBytes  19.3 Gbits/sec    0    835 KBytes       
 [  5]   7.00-8.00   sec  2.27 GBytes  19.5 Gbits/sec    0    835 KBytes       
-[  5]   8.00-9.01   sec  2.27 GBytes  19.3 Gbits/sec    0    862 KBytes       
-[  5]   9.01-10.00  sec  2.27 GBytes  19.6 Gbits/sec    0    877 KBytes       
+[  5]   8.00-9.00   sec  2.27 GBytes  19.3 Gbits/sec    0    862 KBytes       
+[  5]   9.00-10.00  sec  2.27 GBytes  19.6 Gbits/sec    0    877 KBytes       
 - - - - - - - - - - - - - - - - - - - - - - - - -
 [ ID] Interval           Transfer     Bitrate         Retr
 [  5]   0.00-10.00  sec  22.7 GBytes  19.5 Gbits/sec  1275             sender

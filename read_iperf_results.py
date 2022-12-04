@@ -2,7 +2,7 @@ import subprocess
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# subprocess.call(["./parse_perf_result.sh"])
+subprocess.call(["./parse_perf_result.sh"])
 
 
 def get_means():
@@ -34,9 +34,9 @@ data.plot.bar(rot=30)
 plt.plot(data.index,  [means["sender"]]*len(data.index), label="sender mean", color="r")
 plt.plot(data.index, [means["receiver"]]*len(data.index), label="receiver mean", color="orange")
 plt.legend()
-plt.title("Bitrate Simple Network")
+plt.title("Bitrate Complex Network")
 plt.xlabel("intervals [sec]")
 plt.ylabel("bitrate [Gbits/sec]")
 plt.tight_layout()
-plt.savefig('doubleAS_clean_bitrate.pdf')
+plt.savefig('fulltopo_clean_bitrate.pdf')
 # plt.show()
