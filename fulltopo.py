@@ -156,12 +156,12 @@ if __name__ == "__main__":
     # DEBUG_FLAG = True
     try:
         net.start()
-        sleep(40)
-        #rtt_measurement(net)
-        for y in range (10):
-            perfTest(net)
-            sleep(2)
-        IPCLI(net)
+        sleep(30)
+        rtt_measurement(net)
+        # for y in range (10):
+        #     perfTest(net)
+        #     sleep(2)
+        # IPCLI(net)
     finally:
         net.stop()
 

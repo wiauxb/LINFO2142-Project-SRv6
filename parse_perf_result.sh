@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILE=fulltopoDummy.txt
+FILE=doubleAsPerfAvecScript.txt
 
 cat $FILE | grep sender | awk '{print "sender " $7}' > mean.txt
 cat $FILE | grep receiver | awk '{print "receiver " $7}' >> mean.txt
