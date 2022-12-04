@@ -148,8 +148,8 @@ def perfTest(net):
     h1.setIP('fc00:0:2::2')
     result = h1.cmd("iperf3 -s &")
     print(result)
-    sleep(7)
-    result = h4.cmd("iperf3 -c fc00:0:2::2 >> file.txt")
+    sleep(10)
+    result = h4.cmd("iperf3 -c fc00:0:2::2 >> fulltopo.txt")
     print(result)
 
         
@@ -164,7 +164,9 @@ if __name__ == "__main__":
         net.start()
         sleep(20)
         #rtt_measurement(net)
-        perfTest(net)
+        for y in range (10):
+            perfTest(net)
+            sleep(2)
         IPCLI(net)
     finally:
         net.stop()
