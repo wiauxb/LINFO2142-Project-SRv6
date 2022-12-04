@@ -419,13 +419,18 @@ class IPNet(Mininet):
         for dst, dst_ip in dst_dict.items():
             result = src.cmd('%s -c1 %s %s' % ("ping" if v4 else PING6_CMD,
                                                opts, dst_ip))
+            
+            list = result.split('/')
+            rtt = 0
             sent, received = self._parsePing(result)
+            if(received !=0):
+                rtt = list[4]
             lost += sent - received
             packets += sent
             log.output("%s " % dst.name if received else "X ")
         log.output('\n')
 
-        return lost, packets
+        return lost, packets, rtt
 
     def ping(self, hosts: Optional[List[Node]] = None,
              timeout: Optional[str] = None, use_v4=True, use_v6=True) -> float:
@@ -499,7 +504,7 @@ class IPNet(Mininet):
             ploss = 0
             log.output("*** Warning: No packets sent\n")
 
-        return ploss
+        return result[2]
 
     def pingAll(self, timeout: Optional[str] = None, use_v4=True, use_v6=True):
         """Ping between all hosts.
