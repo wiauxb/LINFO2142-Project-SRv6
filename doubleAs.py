@@ -6,19 +6,23 @@ from ipmininet.cli import IPCLI
 from ipmininet import DEBUG_FLAG
 from ipmininet.srv6 import enable_srv6
 from ipmininet.srv6 import SRv6Encap
-import time
+from time import sleep
 
 class MyTopology(IPTopo):
 
     def build(self, *args, **kwargs):
 
         as1r1 = self.bgp('as1r1')
-        as1r2 = self.bgp('as1r2')
-        as2r1 = self.bgp('as2r1')
+        as1r2 = self.bgp('as1r2', family=AF_INET6(redistribute=('ospf6', 'connected')))
+        as2r1 = self.bgp('as2r1', family=AF_INET6(redistribute=('ospf6', 'connected')))
         as2r2 = self.bgp('as2r2')
         as2r3 = self.bgp('as2r3')
+
+        as1h1 = self.addHost('as1h1')
+        as2h1 = self.addHost('as2h1')
         
-        self.addLinks((as1r1, as1r2), (as1r2, as2r1), (as2r1, as2r2), (as2r1, as2r3))
+        self.addLinks((as1r1, as1r2), (as1r2, as2r1), (as2r1, as2r2), (as2r1, as2r3), (as1r1, as1h1), (as2r3, as2h1))
+    
 
         # Set AS-ownerships
         self.addiBGPFullMesh(1, (as1r1, as1r2))
@@ -26,14 +30,12 @@ class MyTopology(IPTopo):
 
         # Add eBGP peering
         ebgp_session(self, as1r2, as2r1)
-    
-        # Add test hosts
-        for r in self.routers():
-            self.addLink(r, self.addHost('h%s' % r))
+            
         super().build(*args, **kwargs)
 
-    def bgp(self, name):
-        r = self.addRouter(name, config=BorderRouterConfig)
+    def bgp(self, name, family=AF_INET6()):
+        r = self.addRouter(name)
+        r.addDaemon(BGP, address_families=(family,))
         return r
     
     def post_build(self, net):
@@ -45,7 +47,7 @@ class MyTopology(IPTopo):
                 #print(result)
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
                 #print(result)
-        result = net.get("has1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev has1r1-eth0")
+        # result = net.get("has1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev has1r1-eth0")
         super().post_build(net)
         #print(result)
     
@@ -62,11 +64,29 @@ class MyTopology(IPTopo):
     #                 through=[net["r5"]],
     #                 # Either insertion (INLINE) or encapsulation (ENCAP)
     #                 mode=SRv6Encap.INLINE)
-def perfTest(net):
-    h1, h4 = net.get( 'has1r1', 'has1r2' )
-    h1.cmd("iperf3 -s -p 1337 &")
-    print(h4)
 
+def rtt_measurement(net):
+    h1 = net.get('as1h1')
+    h2 = net.get('as2h1')    
+    rtt=[]
+    for x in range(15) :
+        result = net.ping(hosts=[h1, h2], timeout="3", use_v4=False)
+        print(result)
+        if(result!=0):
+            rtt.append(float(result))
+    rtt_mean = sum(rtt)/len(rtt)
+    print(rtt_mean)
+    return rtt_mean
+
+def perfTest(net):
+    h1, h4 = net.get( 'as1h1', 'as2h1' )
+    # h1.setIP('fc00:0:1::2')
+    print(h1.cmd("ifconfig"))
+    result = h1.cmd("iperf3 -s &")
+    print(result)
+    sleep(10)
+    result = h4.cmd("iperf3 -c fc00:0:1::2 >> doubleAsPerf.txt")
+    print(result)
 
 if __name__ == "__main__":
     
@@ -74,8 +94,9 @@ if __name__ == "__main__":
     # DEBUG_FLAG = True
     try:
         net.start()
-        time.sleep(30)
-        perfTest(net)
+        sleep(10)
+        rtt_measurement(net)
+        # perfTest(net)
         IPCLI(net)
     finally:
         net.stop()
