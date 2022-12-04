@@ -6,6 +6,7 @@ from ipmininet.cli import IPCLI
 from ipmininet import DEBUG_FLAG
 from ipmininet.srv6 import enable_srv6
 from ipmininet.srv6 import SRv6Encap
+import time
 
 class MyTopology(IPTopo):
 
@@ -45,6 +46,7 @@ class MyTopology(IPTopo):
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
                 #print(result)
         result = net.get("has1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev has1r1-eth0")
+        super().post_build(net)
         #print(result)
     
     # # No need to enable SRv6 because the call to the abstraction
@@ -60,7 +62,10 @@ class MyTopology(IPTopo):
     #                 through=[net["r5"]],
     #                 # Either insertion (INLINE) or encapsulation (ENCAP)
     #                 mode=SRv6Encap.INLINE)
-    #     super().post_build(net)
+def perfTest(net):
+    h1, h4 = net.get( 'has1r1', 'has1r2' )
+    h1.cmd("iperf3 -s -p 1337 &")
+    print(h4)
 
 
 if __name__ == "__main__":
@@ -69,6 +74,8 @@ if __name__ == "__main__":
     # DEBUG_FLAG = True
     try:
         net.start()
+        time.sleep(30)
+        perfTest(net)
         IPCLI(net)
     finally:
         net.stop()

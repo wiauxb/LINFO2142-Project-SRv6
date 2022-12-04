@@ -4,9 +4,9 @@ set -exo pipefail
 ### Install packages for Debian-based OS ###
 
 apt-get update && apt-get install -yq autoconf-archive bison build-essential cmake curl flex git gperf joe libboost-all-dev libcap-dev libdouble-conversion-dev libevent-dev libgflags-dev libgoogle-glog-dev libkrb5-dev libpcre3-dev libpthread-stubs0-dev libnuma-dev libsasl2-dev libsnappy-dev libsqlite3-dev libssl-dev libtool netcat-openbsd pkg-config sudo unzip wget python3-venv python-setuptools python3-setuptools python3-pip ccache
-apt-get install -yq gcc-'5' g++-'5'
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-'5' 40 --slave /usr/bin/g++ g++ /usr/bin/g++-'5'
-update-alternatives --config gcc
+# apt-get install -yq gcc-'5' g++-'5'
+# update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-'5' 40 --slave /usr/bin/g++ g++ /usr/bin/g++-'5'
+# update-alternatives --config gcc
 
 FOLLY_REV="3ceffd7d145be3c85a2aae39f99eb86ea730bdcc"
 SODIUM_REV="6bece9c8c45259998f83ce243b1933e76c03f545"

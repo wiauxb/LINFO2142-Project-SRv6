@@ -142,7 +142,15 @@ def rtt_measurement(net):
             rtt.append(float(result))
     rtt_mean = sum(rtt)/len(rtt)
     print(rtt_mean)
-    return rtt_mean        
+    return rtt_mean
+
+def perfTest(net):
+    h1, h4 = net.get( 'as1h1', 'as4h1' )
+    print(h4)
+    h1.cmd("iperf3 -s -p 1337 &")
+    print(h4)
+
+        
 
 
 
@@ -154,6 +162,7 @@ if __name__ == "__main__":
         net.start()
         sleep(30)
         rtt_measurement(net)
+        perfTest(net)
         IPCLI(net)
     finally:
         net.stop()
