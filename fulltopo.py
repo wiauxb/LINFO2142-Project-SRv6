@@ -109,8 +109,8 @@ class MyTopology(IPTopo):
                 # print(result)
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
                 # print(result)
-        for r in net.routers:
-           r.cmd("python3 lookup_bgp_table.py &")
+        #for r in net.routers:
+        #  r.cmd("python3 lookup_bgp_table.py &")
         super().post_build(net)
         # result = net.get("as1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev as1r1-eth0")
         # print(result)
@@ -133,7 +133,6 @@ class MyTopology(IPTopo):
 def rtt_measurement(net):
     h1 = net.get('as1h1')
     h2 = net.get('as4h1')    
-    sleep(20)
     rtt=[]
     for x in range(15) :
         result = net.ping(hosts=[h1, h2], timeout="3", use_v4=False)
@@ -146,9 +145,12 @@ def rtt_measurement(net):
 
 def perfTest(net):
     h1, h4 = net.get( 'as1h1', 'as4h1' )
-    print(h4)
-    h1.cmd("iperf3 -s -p 1337 &")
-    print(h4)
+    h1.setIP('fc00:0:2::2')
+    result = h1.cmd("iperf3 -s &")
+    print(result)
+    sleep(7)
+    result = h4.cmd("iperf3 -c fc00:0:2::2 >> file.txt")
+    print(result)
 
         
 
@@ -160,8 +162,8 @@ if __name__ == "__main__":
     # DEBUG_FLAG = True
     try:
         net.start()
-        sleep(30)
-        rtt_measurement(net)
+        sleep(20)
+        #rtt_measurement(net)
         perfTest(net)
         IPCLI(net)
     finally:
