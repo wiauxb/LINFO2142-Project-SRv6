@@ -1,5 +1,5 @@
 from ipmininet.iptopo import IPTopo
-from ipmininet.router.config import SSHd, BGP, AF_INET6, ebgp_session, CLIENT_PROVIDER, SHARE,  BorderRouterConfig, ISIS
+from ipmininet.router.config import SSHd, BGP, AF_INET6, ebgp_session, CLIENT_PROVIDER, SHARE,  BorderRouterConfig, set_rr
 from ipmininet.host.config import Named
 from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
@@ -15,22 +15,28 @@ class MyTopology(IPTopo):
 
         as1r1 = self.bgp('as1r1')
         as1r2 = self.bgp('as1r2', family=AF_INET6(redistribute=('ospf6', 'connected')))
+        as1r3 = self.bgp('as1r3')
+        as1r4 = self.bgp('as1r4', family=AF_INET6(redistribute=('ospf6', 'connected')))
         as2r1 = self.bgp('as2r1', family=AF_INET6(redistribute=('ospf6', 'connected')))
-        as2r2 = self.bgp('as2r2')
-        as2r3 = self.bgp('as2r3')
+        as2r2 = self.bgp('as2r2', family=AF_INET6(redistribute=('ospf6', 'connected')))
 
         as1h1 = self.addHost('as1h1')
         as2h1 = self.addHost('as2h1')
         
-        self.addLinks((as1r1, as1r2), (as1r2, as2r1), (as2r1, as2r2), (as2r1, as2r3), (as1r1, as1h1), (as2r3, as2h1))
+        self.addLinks((as1r1, as1r2), (as1r2, as1r4), (as1r3, as1r4), (as1r3, as1h1))
+        self.addLink(as1r1, as1r3, igp_metric=10)
+        self.addLinks((as1r2, as2r1), (as1r4, as2r2))
+        self.addLinks((as2r1, as2r2), (as2r1, as2h1))
     
 
         # Set AS-ownerships
-        self.addiBGPFullMesh(1, (as1r1, as1r2))
-        self.addiBGPFullMesh(2, (as2r1, as2r2, as2r3))
+        self.addAS(1, (as1r1, as1r2, as1r3, as1r4))
+        self.addAS(2, (as2r1, as2r2))
+        set_rr(self, rr=as1r1, peers=(as1r2, as1r3, as1r4))
 
         # Add eBGP peering
         ebgp_session(self, as1r2, as2r1)
+        ebgp_session(self, as1r4, as2r2)
             
         super().build(*args, **kwargs)
 

@@ -17,20 +17,25 @@ class MyTopology(IPTopo):
         as1r2 = self.bgp('as1r2', family=AF_INET6(redistribute=('ospf6', 'connected')))
         as2r1 = self.bgp('as2r1', family=AF_INET6(redistribute=('ospf6', 'connected')))
         as2r2 = self.bgp('as2r2')
-        as2r3 = self.bgp('as2r3')
+        as2r3 = self.bgp('as2r3', family=AF_INET6(redistribute=('ospf6', 'connected')))
+        as3r1 = self.bgp('as3r1', family=AF_INET6(redistribute=('ospf6', 'connected')))
+        as3r2 = self.bgp('as3r2')
 
         as1h1 = self.addHost('as1h1')
         as2h1 = self.addHost('as2h1')
+        as3h1 = self.addHost('as3h1')
         
-        self.addLinks((as1r1, as1r2), (as1r2, as2r1), (as2r1, as2r2), (as2r1, as2r3), (as1r1, as1h1), (as2r3, as2h1))
+        self.addLinks((as1r1, as1r2), (as1r2, as2r1), (as2r1, as2r2), (as2r2, as2r3), (as2r3, as3r1), (as3r1, as3r2), (as1r1, as1h1), (as2r2, as2h1), (as3r2, as3h1))
     
 
         # Set AS-ownerships
         self.addiBGPFullMesh(1, (as1r1, as1r2))
         self.addiBGPFullMesh(2, (as2r1, as2r2, as2r3))
+        self.addiBGPFullMesh(3, (as3r1, as3r2))
 
         # Add eBGP peering
         ebgp_session(self, as1r2, as2r1)
+        ebgp_session(self, as2r3, as3r1)
             
         super().build(*args, **kwargs)
 
