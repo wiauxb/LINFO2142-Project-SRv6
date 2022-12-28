@@ -36,6 +36,14 @@ class MyTopology(IPTopo):
         # Add eBGP peering
         ebgp_session(self, as1r2, as2r1)
         ebgp_session(self, as2r3, as3r1)
+
+        
+        self.addNetworkCapture(# Capture on all the interfaces of r1 and s1
+                            nodes=[as1r1, as2r2, as3r2],
+                            # The prefix of the capture filename
+                            base_filename="capture_tripleAS",
+                            # Any additional argument to give to tcpdump
+                            extra_arguments="-v")
             
         super().build(*args, **kwargs)
 

@@ -17,16 +17,18 @@ class MyTopology(IPTopo):
         as1r2 = self.bgp('as1r2', family=AF_INET6(redistribute=('ospf6', 'connected')))
         as1r3 = self.bgp('as1r3')
         as1r4 = self.bgp('as1r4', family=AF_INET6(redistribute=('ospf6', 'connected')))
-        as2r1 = self.bgp('as2r1', family=AF_INET6(redistribute=('ospf6', 'connected')))
-        as2r2 = self.bgp('as2r2', family=AF_INET6(redistribute=('ospf6', 'connected')))
+        as2r1 = self.bgp('as2r1', family=AF_INET6(redistribute=('ospf6', 'connected'), networks=('dead:beef::/32',)))
+        as2r2 = self.bgp('as2r2', family=AF_INET6(redistribute=('ospf6', 'connected'), networks=('dead:beef::/32',)))
 
         as1h1 = self.addHost('as1h1')
         as2h1 = self.addHost('as2h1')
+        switch = self.addSwitch('s2')
         
         self.addLinks((as1r1, as1r2), (as1r2, as1r4), (as1r3, as1r4), (as1r3, as1h1))
         self.addLink(as1r1, as1r3, igp_metric=10)
         self.addLinks((as1r2, as2r1), (as1r4, as2r2))
-        self.addLinks((as2r1, as2r2), (as2r1, as2h1))
+        self.addLinks((as2r1, as2r2), (as2r1, switch), (as2r2, switch), (switch, as2h1))
+        self.addSubnet((as2r1, as2r2, as2h1), subnets=('dead:beef::/32',))
     
 
         # Set AS-ownerships
