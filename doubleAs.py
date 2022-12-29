@@ -21,7 +21,7 @@ class MyTopology(IPTopo):
         as1h1 = self.addHost('as1h1')
         as2h1 = self.addHost('as2h1')
         
-        self.addLinks((as1r1, as1r2), (as1r2, as2r1), (as2r1, as2r2), (as2r1, as2r3), (as1r1, as1h1), (as2r3, as2h1))
+        self.addLinks((as1r1, as1r2), (as1r2, as2r1), (as2r1, as2r2), (as2r2, as2r3), (as1r1, as1h1), (as2r3, as2h1))
     
 
         # Set AS-ownerships
@@ -48,7 +48,7 @@ class MyTopology(IPTopo):
                 result = n.cmd("sysctl net.ipv6.conf."+i+".seg6_require_hmac=-1")
                 #print(result)
         for r in net.routers:
-            r.cmd("python3 dummy_lookup.py &")
+            r.cmd("python3 lookup_bgp_table.py &")
         # result = net.get("has1r1").cmd("ip -6 route add fc00:0:7::2 encap seg6 mode inline segs fc00:0:d::1 dev has1r1-eth0")
         super().post_build(net)
         #print(result)
@@ -84,11 +84,11 @@ def rtt_measurement(net):
 def perfTest(net):
     h1, h4 = net.get( 'as1h1', 'as2h1' )
     # h1.setIP('fc00:0:1::2')
-    result = h1.cmd("iperf3 -s &")
     print(net.pingAll())
+    result = h1.cmd("iperf3 -s &")
     print("server "+str(result))
     sleep(10)
-    result = h4.cmd("iperf3 -c fc00:0:1::2 >> doubleAsPerf_dummy.txt")
+    result = h4.cmd("iperf3 -c fc00:0:1::2 >> doubleAsPerf_srv6.txt")
     print("client " + str(result))
 
 if __name__ == "__main__":
@@ -98,8 +98,8 @@ if __name__ == "__main__":
     try:
         net.start()
         sleep(30)
-        for i in range(10):
-            perfTest(net)
+        # for i in range(10):
+            # perfTest(net)
         IPCLI(net)
     finally:
         net.stop()
