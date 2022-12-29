@@ -97,10 +97,11 @@ if __name__ == "__main__":
     # DEBUG_FLAG = True
     try:
         net.start()
-        sleep(30)
+        sleep(20)
+        rtt_measurement(net)
         # for i in range(10):
-            # perfTest(net)
-        IPCLI(net)
+        #     perfTest(net)
+        # IPCLI(net)
     finally:
         net.stop()
 
