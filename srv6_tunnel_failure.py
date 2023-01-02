@@ -32,6 +32,8 @@ class MyTopology(IPTopo):
                                                          |
                                                          +
     """
+
+        # Add router and hosts
         as1r1 = self.bgp('as1r1')
         as1r2 = self.bgp('as1r2')
         as1r3 = self.bgp('as1r3')
@@ -44,7 +46,6 @@ class MyTopology(IPTopo):
         as2h1 = self.addHost('as2h1')
         
         self.addLinks((as1r1,as1r2),(as1r2, as1r4), (as1r3,as1r5),(as1r4, as1r5), (as1r5, as2r1), (as2r1, as2r2), (as1r1, as1h1), (as2r2, as2h1))
-        # self.addLink(as1r2, as1r3)
         self.addLink(as1r2, as1r3, igp_metric=10)
     
 
@@ -87,8 +88,8 @@ if __name__ == "__main__":
     try:
         net.start()
         failure_plan = [("as1r2", "as1r4")]
-        interfaces_down = net.runFailurePlan(failure_plan)
-        # net.restoreIntfs(interfaces_down)
+        interfaces_down = net.runFailurePlan(failure_plan) # Make a link failure
+        # net.restoreIntfs(interfaces_down) # Restore the link failure
         IPCLI(net)
     finally:
         net.stop()
