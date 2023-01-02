@@ -19,9 +19,9 @@ class MyTopology(IPTopo):
                                 | as1r3 +--------+       |
                                 +---+---+        |       |
                                   10|            |       |
-        +-------+   +-------+   +---+---+    +---+---+   |   +-------+   +-------+   +-------+   +-------+
-        + as1h1 +---+ as1r1 +---+ as1r2 |    | as1r5 +-------+ as2r1 +---+ as2r2 +---+ as2r3 +---+ as2h1 +
-        +-------+   +-------+   +---+---+    +---+---+   |   +-------+   +-------+   +-------+   +-------+
+        +-------+   +-------+   +---+---+    +---+---+   |   +-------+   +-------+   +-------+
+        + as1h1 +---+ as1r1 +---+ as1r2 |    | as1r5 +-------+ as2r1 +---+ as2r2 +---+ as2h1 +
+        +-------+   +-------+   +---+---+    +---+---+   |   +-------+   +-------+   +-------+
                                     |            |       |
                                     |(failure)   |       |
                                     |            |       |
@@ -39,19 +39,18 @@ class MyTopology(IPTopo):
         as1r5 = self.bgp('as1r5', family=AF_INET6(redistribute=('ospf6', 'connected')))
         as2r1 = self.bgp('as2r1', family=AF_INET6(redistribute=('ospf6', 'connected')))
         as2r2 = self.bgp('as2r2')
-        as2r3 = self.bgp('as2r3')
 
         as1h1 = self.addHost('as1h1')
         as2h1 = self.addHost('as2h1')
         
-        self.addLinks((as1r1,as1r2),(as1r2, as1r4), (as1r3,as1r5),(as1r4, as1r5), (as1r5, as2r1), (as2r1, as2r2), (as2r2, as2r3), (as1r1, as1h1), (as2r3, as2h1))
+        self.addLinks((as1r1,as1r2),(as1r2, as1r4), (as1r3,as1r5),(as1r4, as1r5), (as1r5, as2r1), (as2r1, as2r2), (as1r1, as1h1), (as2r2, as2h1))
         # self.addLink(as1r2, as1r3)
         self.addLink(as1r2, as1r3, igp_metric=10)
     
 
         # Set AS-ownerships
         self.addiBGPFullMesh(1, (as1r1, as1r2, as1r3, as1r4, as1r5))
-        self.addiBGPFullMesh(2, (as2r1, as2r2, as2r3))
+        self.addiBGPFullMesh(2, (as2r1, as2r2))
 
         # Add eBGP peering
         ebgp_session(self, as1r5, as2r1)
